@@ -46,6 +46,7 @@ GLOBAL_CBUFFER_START(ShaderVariablesGlobal, b0)
     float4 _SinTime;
     float4 _CosTime;
     float4 unity_DeltaTime;
+    float4 unity_UnscaledDeltaTime; //BEGIN_VENICE - Ben: Use unscaled time for exposure
     float4 _TimeParameters;
     float4 _LastTimeParameters;
     float4 _PlanetCenterRadius;

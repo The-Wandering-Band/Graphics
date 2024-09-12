@@ -1592,11 +1592,13 @@ namespace UnityEngine.Rendering.HighDefinition
             float dt = Time.deltaTime;
             float sdt = Time.smoothDeltaTime;
 #endif
+            float udt = Time.unscaledDeltaTime; //BEGIN_VENICE - Ben: Use unscaled time for exposure
 
             cb._Time = new Vector4(ct * 0.05f, ct, ct * 2.0f, ct * 3.0f);
             cb._SinTime = new Vector4(Mathf.Sin(ct * 0.125f), Mathf.Sin(ct * 0.25f), Mathf.Sin(ct * 0.5f), Mathf.Sin(ct));
             cb._CosTime = new Vector4(Mathf.Cos(ct * 0.125f), Mathf.Cos(ct * 0.25f), Mathf.Cos(ct * 0.5f), Mathf.Cos(ct));
             cb.unity_DeltaTime = new Vector4(dt, 1.0f / dt, sdt, 1.0f / sdt);
+            cb.unity_UnscaledDeltaTime = new Vector4(udt, 1.0f / udt, 0.0f, 0.0f); //BEGIN_VENICE - Ben: Use unscaled time for exposure
             cb._TimeParameters = new Vector4(ct, Mathf.Sin(ct), Mathf.Cos(ct), 0.0f);
             cb._LastTimeParameters = new Vector4(pt, Mathf.Sin(pt), Mathf.Cos(pt), 0.0f);
             cb._FrameCount = frameCount;

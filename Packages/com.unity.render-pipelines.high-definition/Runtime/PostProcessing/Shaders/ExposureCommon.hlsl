@@ -114,7 +114,7 @@ float AdaptExposure(float exposure)
 {
     if (ParamAdaptationMode == 1)
     {
-        return ComputeLuminanceAdaptation(GetPreviousExposureEV100(), exposure, ParamSpeedDarkToLight, ParamSpeedLightToDark, unity_DeltaTime.x);
+        return ComputeLuminanceAdaptation(GetPreviousExposureEV100(), exposure, ParamSpeedDarkToLight, ParamSpeedLightToDark, unity_UnscaledDeltaTime.x); //BEGIN_VENICE - Ben: Use unscaled time for exposure
     }
     else
     {

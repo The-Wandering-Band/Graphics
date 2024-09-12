@@ -441,11 +441,11 @@ namespace UnityEditor.Rendering.HighDefinition
 
             container.Add(CreateTitle(Style.migrationTitle));
 
-            if (MaterialUpgrader.ProjectFolderContainsNonBuiltinMaterials(
-                    UpgradeStandardShaderMaterials.GetHDUpgraders()))
-            {
-                container.Add(new HelpBox(HelpBox.Kind.Warning, Style.nonBuiltinMaterialWarning));
-            }
+            // if (MaterialUpgrader.ProjectFolderContainsNonBuiltinMaterials(
+            //         UpgradeStandardShaderMaterials.GetHDUpgraders()))
+            // {
+            //     container.Add(new HelpBox(HelpBox.Kind.Warning, Style.nonBuiltinMaterialWarning));
+            // }
 
             container.Add(CreateLargeButton(Style.migrateAllButton, UpgradeStandardShaderMaterials.UpgradeMaterialsProject));
             container.Add(CreateLargeButton(Style.migrateSelectedButton, UpgradeStandardShaderMaterials.UpgradeMaterialsSelection));

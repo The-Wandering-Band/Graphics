@@ -632,7 +632,8 @@ namespace UnityEngine.Rendering.HighDefinition
             bool postProcessIsFinalPass)
         {
             TextureHandle dest = postProcessIsFinalPass ? backBuffer : renderGraph.CreateTexture(
-                new TextureDesc(Vector2.one, false, true) { colorFormat = GetColorBufferFormat(), name = "Intermediate Postprocess buffer" });
+                new TextureDesc(Vector2.one, false, true) { colorFormat = GetColorBufferFormat(), name = "Intermediate Postprocess buffer", msaaSamples = hdCamera.msaaSamples});
+                //BEGIN_VENICE: Ben - Add msaaSamples to texture
 
             var motionVectors = hdCamera.frameSettings.IsEnabled(FrameSettingsField.MotionVectors) ? prepassOutput.resolvedMotionVectorsBuffer : renderGraph.defaultResources.blackTextureXR;
             bool flipYInPostProcess = postProcessIsFinalPass && (hdCamera.flipYMode == HDAdditionalCameraData.FlipYMode.ForceFlipY || hdCamera.isMainGameView);

@@ -121,6 +121,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public Vector4 _SinTime;                    // { sin(t/8), sin(t/4), sin(t/2), sin(t) }
         public Vector4 _CosTime;                    // { cos(t/8), cos(t/4), cos(t/2), cos(t) }
         public Vector4 unity_DeltaTime;             // { dt, 1/dt, smoothdt, 1/smoothdt }
+		public Vector4 unity_UnscaledDeltaTime;		//BEGIN_VENICE - Ben: Use unscaled time for exposure // { udt, 1/udt, 0, 0 }
         public Vector4 _TimeParameters;             // { t, sin(t), cos(t) }
         public Vector4 _LastTimeParameters;         // { t, sin(t), cos(t) }
 

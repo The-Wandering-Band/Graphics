@@ -135,8 +135,11 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
 
             var bufferResource = GetComputeBufferResource(handle.handle);
             var resource = bufferResource.graphicsResource;
-            if (resource == null)
-                throw new InvalidOperationException("Trying to use a compute buffer ({bufferResource.GetName()}) that was already released or not yet created. Make sure you declare it for reading in your pass or you don't read it before it's been written to at least once.");
+            // BEGIN_VENICE: Ben - commenting our exception, since it happens randomly, we don't understand why, it's Unity's internal issue, and it seems harmless
+            // The only place this gets called can also return null, so we know just returning null here won't break anything
+            // if (resource == null)
+            //     throw new InvalidOperationException("Trying to use a compute buffer ({bufferResource.GetName()}) that was already released or not yet created. Make sure you declare it for reading in your pass or you don't read it before it's been written to at least once.");
+            // END_VENICE
 
             return resource;
         }

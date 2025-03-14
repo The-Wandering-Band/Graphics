@@ -1059,6 +1059,7 @@ namespace UnityEngine.Rendering.Universal
             ShaderGlobalKeywords.SoftShadows = GlobalKeyword.Create(ShaderKeywordStrings.SoftShadows);
             ShaderGlobalKeywords.SoftShadowsLow = GlobalKeyword.Create(ShaderKeywordStrings.SoftShadowsLow);
             ShaderGlobalKeywords.SoftShadowsMedium = GlobalKeyword.Create(ShaderKeywordStrings.SoftShadowsMedium);
+            ShaderGlobalKeywords.SoftShadowsHigh = GlobalKeyword.Create(ShaderKeywordStrings.SoftShadowsHigh);
             ShaderGlobalKeywords.MixedLightingSubtractive = GlobalKeyword.Create(ShaderKeywordStrings.MixedLightingSubtractive);
             ShaderGlobalKeywords.LightmapShadowMixing = GlobalKeyword.Create(ShaderKeywordStrings.LightmapShadowMixing);
             ShaderGlobalKeywords.ShadowsShadowMask = GlobalKeyword.Create(ShaderKeywordStrings.ShadowsShadowMask);
@@ -1261,9 +1262,6 @@ namespace UnityEngine.Rendering.Universal
 
         /// <summary> Keyword used for high quality Bloom dirt. </summary>
         public const string BloomHQDirt = "_BLOOM_HQ_DIRT";
-
-        /// <summary> Keyword used for RGBM format for Bloom. </summary>
-        public const string UseRGBM = "_USE_RGBM";
 
         /// <summary> Keyword used for Distortion. </summary>
         public const string Distortion = "_DISTORTION";

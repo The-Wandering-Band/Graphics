@@ -6,7 +6,6 @@ using UnityEngine.TestTools;
 using UnityEditor;
 using Unity.Mathematics;
 using NUnit.Framework.Internal;
-using System.Diagnostics;
 using System.Reflection;
 #if UNITY_EDITOR
 using UnityEditor.Rendering;
@@ -43,6 +42,21 @@ namespace UnityEngine.Rendering.Tests
         class BoxedCounter
         {
             public int Value { get; set; }
+        }
+
+        public void SubmitCameraRenderRequest(Camera camera)
+        {
+            var request = new UnityEngine.Rendering.RenderPipeline.StandardRequest();
+
+            RenderTextureDescriptor desc = new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight, RenderTextureFormat.Default, 32);
+            request.destination = RenderTexture.GetTemporary(desc);
+
+            // Check if the active render pipeline supports the render request
+            if (RenderPipeline.SupportsRenderRequest(camera, request))
+            {
+                RenderPipeline.SubmitRenderRequest(camera, request);
+            }
+            RenderTexture.ReleaseTemporary(request.destination);
         }
 
         [OneTimeSetUp]
@@ -123,7 +137,7 @@ namespace UnityEngine.Rendering.Tests
                     Assert.IsTrue(brg.instanceCullingBatcher.GetDrawInstanceData().drawInstances.Length == 3);
 
                     brgContext.ScheduleQueryRendererGroupInstancesJob(objIDs.AsArray(), instances).Complete();
-                    brg.DestroyInstances(instances);
+                    brg.DestroyDrawInstances(instances);
 
                     Assert.IsTrue(brg.instanceCullingBatcher.GetDrawInstanceData().drawInstances.Length == 0);
                 }
@@ -212,14 +226,15 @@ namespace UnityEngine.Rendering.Tests
                     var cameraObject = new GameObject("myCamera");
                     var mainCamera = cameraObject.AddComponent<Camera>();
 
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
+
                     Assert.AreEqual(1, callbackCounter.Value);
 
                     mainCamera = null;
                     GameObject.DestroyImmediate(cameraObject);
 
                     brgContext.ScheduleQueryRendererGroupInstancesJob(objIDs.AsArray(), instances).Complete();
-                    brg.DestroyInstances(instances);
+                    brg.DestroyDrawInstances(instances);
                 }
             }
 
@@ -272,20 +287,20 @@ namespace UnityEngine.Rendering.Tests
                     SceneVisibilityManager.instance.Hide(go, true);
 
                     brg.OnBeginCameraRendering(mainCamera);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
                     brg.OnEndCameraRendering(mainCamera);
                     Assert.AreEqual(callbackCounter.Value, 0);
 
                     SceneVisibilityManager.instance.Show(go, true);
 
                     brg.OnBeginCameraRendering(mainCamera);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
                     brg.OnEndCameraRendering(mainCamera);
                     Assert.AreEqual(callbackCounter.Value, 1);
 
                     GameObject.DestroyImmediate(cameraObject);
                     brgContext.ScheduleQueryRendererGroupInstancesJob(objIDs, instances).Complete();
-                    brg.DestroyInstances(instances);
+                    brg.DestroyDrawInstances(instances);
                 }
             }
 
@@ -360,13 +375,13 @@ namespace UnityEngine.Rendering.Tests
                     var cameraObject = new GameObject("myCamera");
                     var mainCamera = cameraObject.AddComponent<Camera>();
 
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     mainCamera = null;
                     GameObject.DestroyImmediate(cameraObject);
 
                     brgContext.ScheduleQueryRendererGroupInstancesJob(objIDs.AsArray(), instances).Complete();
-                    brg.DestroyInstances(instances);
+                    brg.DestroyDrawInstances(instances);
                 }
             }
 
@@ -476,16 +491,16 @@ namespace UnityEngine.Rendering.Tests
 
                     //Test 1 - Should render Lod0 (range 0 - 6.66)
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -1.0f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -5.65f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     //Test 2 - Should render Lod1(range 6.66 - 12.5)
                     expectedMeshID = 2;
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -6.67f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -10.5f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     //Test 3 - Should render Lod2 (range 12.5 - 99.9)
                     expectedMeshID = 3;
@@ -501,15 +516,15 @@ namespace UnityEngine.Rendering.Tests
                     brgContext.TransformLODGroups(transformedLODGroups);
 
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -6.5f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -40.3f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     //Test 3 - Should size cull (range 99.9 - Inf.)
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -50.4f);
                     expectedMeshID = 4;
                     expectedDrawCommandCount = 1;
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     Assert.AreEqual(7, callbackCounter.Value);
 
@@ -517,7 +532,7 @@ namespace UnityEngine.Rendering.Tests
                     GameObject.DestroyImmediate(cameraObject);
 
                     brgContext.ScheduleQueryRendererGroupInstancesJob(objIDs.AsArray(), instances).Complete();
-                    brg.DestroyInstances(instances);
+                    brg.DestroyDrawInstances(instances);
                 }
             }
 
@@ -634,7 +649,7 @@ namespace UnityEngine.Rendering.Tests
                     expectedFlags.Add(BatchDrawCommandFlags.LODCrossFadeValuePacked);
                     expectedDrawCommandCount = 2;
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -1.0f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     //Test 1 - Should render Lod0 and 1 crossfaded + non loded sphere
                     expectedMeshIDs.Clear();
@@ -647,7 +662,7 @@ namespace UnityEngine.Rendering.Tests
                     expectedFlags.Add(BatchDrawCommandFlags.LODCrossFade);
                     expectedDrawCommandCount = 3;
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -2.0f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     //Test 2 - Should render Lod1 + non loded sphere (single Draw Command as they are both spheres)
                     expectedMeshIDs.Clear();
@@ -656,7 +671,7 @@ namespace UnityEngine.Rendering.Tests
                     expectedFlags.Add(BatchDrawCommandFlags.LODCrossFadeValuePacked);
                     expectedDrawCommandCount = 1;
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -3.0f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     //Test 3 - Should render Lod1 crossfaded + non loded sphere
                     expectedMeshIDs.Clear();
@@ -667,13 +682,13 @@ namespace UnityEngine.Rendering.Tests
                     expectedFlags.Add(BatchDrawCommandFlags.LODCrossFade);
                     expectedDrawCommandCount = 2;
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -4.0f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     mainCamera = null;
                     GameObject.DestroyImmediate(cameraObject);
 
                     brgContext.ScheduleQueryRendererGroupInstancesJob(objIDs.AsArray(), instances).Complete();
-                    brg.DestroyInstances(instances);
+                    brg.DestroyDrawInstances(instances);
                 }
             }
 
@@ -764,7 +779,7 @@ namespace UnityEngine.Rendering.Tests
                     expectedFlags.Add(BatchDrawCommandFlags.LODCrossFadeValuePacked);
                     expectedDrawCommandCount = 1;
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -1.0f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     //Test 1 - (8.5m) Should render sphere1 + crossfaded sphere0.
                     expectedMeshIDs.Clear();
@@ -775,7 +790,7 @@ namespace UnityEngine.Rendering.Tests
                     expectedFlags.Add(BatchDrawCommandFlags.LODCrossFade);
                     expectedDrawCommandCount = 1;
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -8.5f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     //Test 2 - (10m) Should only render sphere1.
                     expectedMeshIDs.Clear();
@@ -784,13 +799,13 @@ namespace UnityEngine.Rendering.Tests
                     expectedFlags.Add(BatchDrawCommandFlags.LODCrossFadeValuePacked);
                     expectedDrawCommandCount = 1;
                     cameraObject.transform.position = new Vector3(0.0f, 0.0f, -10.0f);
-                    mainCamera.Render();
+                    SubmitCameraRenderRequest(mainCamera);
 
                     mainCamera = null;
                     GameObject.DestroyImmediate(cameraObject);
 
                     brgContext.ScheduleQueryRendererGroupInstancesJob(objIDs.AsArray(), instances).Complete();
-                    brg.DestroyInstances(instances);
+                    brg.DestroyDrawInstances(instances);
                 }
             }
 
@@ -1133,7 +1148,7 @@ namespace UnityEngine.Rendering.Tests
             {
                 Assert.IsTrue(rendererData.rendererGroupID.Length == 2);
                 dispatched = true;
-            });
+            }, true);
 
             Assert.IsTrue(dispatched);
 
@@ -1147,7 +1162,7 @@ namespace UnityEngine.Rendering.Tests
                 Assert.IsTrue(rendererData.invalidRendererGroupID.Length == 1);
                 Assert.IsTrue(rendererData.invalidRendererGroupID[0] == renderer0.GetInstanceID());
                 dispatched = true;
-            });
+            }, true);
 
             Assert.IsTrue(dispatched);
 
@@ -1158,7 +1173,7 @@ namespace UnityEngine.Rendering.Tests
             {
                 Assert.IsTrue(rendererData.invalidRendererGroupID.Length == 2);
                 dispatched = true;
-            });
+            }, true);
 
             Assert.IsTrue(dispatched);
 
@@ -1202,9 +1217,13 @@ namespace UnityEngine.Rendering.Tests
 
             gpuDrivenProcessor.EnableGPUDrivenRenderingAndDispatchRendererData(rendererIDs, (in GPUDrivenRendererGroupData rendererData, IList<Mesh> meshes, IList<Material> materials) =>
             {
+                Assert.IsTrue(rendererData.localBounds.Length == 0);
+                Assert.IsTrue(rendererData.localToWorldMatrix.Length == 0);
+                Assert.IsTrue(rendererData.prevLocalToWorldMatrix.Length == 0);
+                Assert.IsTrue(rendererData.lodGroupID.Length == 0);
                 Assert.IsTrue(rendererData.rendererGroupID.Length == 4);
                 dispatched = true;
-            });
+            }, true);
 
             Assert.IsTrue(dispatched);
 
@@ -1218,7 +1237,7 @@ namespace UnityEngine.Rendering.Tests
             {
                 Assert.IsTrue(rendererData.rendererGroupID.Length == 1);
                 dispatched = true;
-            });
+            }, true);
 
             Assert.IsTrue(dispatched);
 
@@ -1260,7 +1279,7 @@ namespace UnityEngine.Rendering.Tests
             {
                 Assert.IsTrue(rendererData.rendererGroupID.Length == 1);
                 dispatched = true;
-            });
+            }, true);
 
             Assert.IsTrue(dispatched);
 
